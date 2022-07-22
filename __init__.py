@@ -10,14 +10,16 @@ class Cam(MycroftSkill):
     def initialize(self):
         """Initialize event listeners.
         """
-        self.add_event('cam-skill:selfie_taken', self.selfie_taken_handler())
+        self.add_event('cam-skill:selfie_taken', self.selfie_taken_handler)
 
-    def selfie_taken_handler(self, selfie:str):
+    def selfie_taken_handler(self, message:Message):
         """This method is called when the user takes a selfie.
 
         Args:
-            selfie (str): Path to selfie.
+            message (Message): Message from MagicMirror containing 'data' dict with path to selfie with key 'selfie'. 
         """
+        assert message.data['selfie'], "No path to selfie found."
+        selfie = message.data['selfie']
         self.log.info('Selfie taken notification received.')
         while True:
             options = self.translate_namedvalue('options')
