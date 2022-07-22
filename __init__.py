@@ -20,14 +20,17 @@ class Cam(MycroftSkill):
         """
         self.log.info('Selfie taken notification received.')
         while True:
-            selection = self.ask_selection(self.translate_list('options'))
-            if selection in self.translate_list('send.selfie'):
+            options = self.translate_namedvalue('options')
+            selection = self.ask_selection(options.items(), 'what.to.do')
+            if selection == options['another']:
+                return self.emit._take_selfie()
+            elif selection == options['send']:
                 self.send_selfie(selfie)
                 return self.another_selfie()
-            elif selection in self.translate_list('delete.selfie'):
+            elif selection == options['delete']:
                 self.delete_selfie(selfie)
                 return self.another_selfie()
-            elif selection in self.translate_list('exit') or self.ask_yes_no('did.not.understand.do.you.want.to.exit') == 'yes':
+            elif selection == options['exit'] or self.ask_yes_no('did.not.understand.do.you.want.to.exit') == 'yes':
                 return self.exit_cam()
             
     def another_selfie(self):
