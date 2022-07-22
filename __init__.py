@@ -5,66 +5,58 @@ class Cam(MycroftSkill):
     def __init__(self):
         """Initialize the object for mycroft.
         """      
-        MycroftSkill.__init__(self)  
-        pass
+        MycroftSkill.__init__(self)
 
     def initialize(self):
         """Initialize event lsiteners.
         """
         self.add_event('cam-skill:selfie_taken', self.selfie_taken_handler())
- 
-    def selfie_taken_handler(self, selfie:bytes):
-        """This function is called when the user takes a selfie.
+
+    def selfie_taken_handler(self, selfie:str):
+        """This method is called when the user takes a selfie.
+
+        Args:
+            selfie (str): Path to selfie.
         """
         while True:
             selection = self.ask_selection(self.translate_list('selfie.options'))
-            if selection in self.translate_list('only.save.selfie'):
-                self.save_selfie(selfie)
-                return self.another_selfie()
-            elif selection in self.translate_list('save.and.send.selfie'):
+            if selection in self.translate_list('send.selfie'):
                 self.send_selfie(selfie)
                 return self.another_selfie()
             elif selection in self.translate_list('delete.selfie'):
-                self.delete_selfie()
+                self.delete_selfie(selfie)
                 return self.another_selfie()
             elif selection in self.translate_list('exit') or self.ask_yes_no('did.not.understand.do.you.want.to.exit') == 'yes':
                 return self.exit_cam()
             
     def another_selfie(self):
-        """Ask the user if the want to take another selfie.
+        """Ask the user if they want to take another selfie.
         """
         if self.ask_yes_no('another.selfie') == 'yes':
+            self.acknowledge()
             return self.emit_take_selfie()
-                
-    def save_selfie(self, selfie:bytes):
-        """Save the selfie to disk .
+        self.acknowledge()
 
-        Args:
-            selfie (bytes): The selfie.
-        """
-        pass
-    
     def send_selfie(self, selfie:bytes):
         """Send a selfie to a friend .
 
         Args:
-            selfie (bytes): The selfie.
+            selfie (bytes): Path to selfie.
         """
-        self.save_selfie(selfie)
-        pass
+        self.log.info("FILE SHOULD BE SENT HERE")
     
-    def delete_selfie(self):
+    def delete_selfie(self, selfie:str):
         """Delete selfie .
         """
-        pass
- 
+        self.log.info("FILE SHOULD BE DELETED HERE")
+         
     def emit_take_selfie(self):
-        """Emits the TKE - IKE - self - self .
+        """Emits the TAKE-SELFIE command to MMM-Cam.
         """
         self.bus.emit(Message("RELAY:MMM-Cam:TAKE-SELFIE", {}))
  
     def emit_init_cam(self):
-        """Emits the INIT - CAM for the device .
+        """Emits the INIT-CAM command to MMM-Cam.
         """
         self.bus.emit(Message("RELAY:MMM-Cam:INIT-CAM", {}))
 
