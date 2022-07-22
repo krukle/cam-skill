@@ -18,8 +18,9 @@ class Cam(MycroftSkill):
         Args:
             selfie (str): Path to selfie.
         """
+        self.log.info('Selfie taken notification received.')
         while True:
-            selection = self.ask_selection(self.translate_list('selfie.options'))
+            selection = self.ask_selection(self.translate_list('options'))
             if selection in self.translate_list('send.selfie'):
                 self.send_selfie(selfie)
                 return self.another_selfie()
@@ -37,11 +38,11 @@ class Cam(MycroftSkill):
             return self.emit_take_selfie()
         self.acknowledge()
 
-    def send_selfie(self, selfie:bytes):
+    def send_selfie(self, selfie:str):
         """Send a selfie to a friend .
 
         Args:
-            selfie (bytes): Path to selfie.
+            selfie (str): Path to selfie.
         """
         self.log.info("FILE SHOULD BE SENT HERE")
     
@@ -49,6 +50,12 @@ class Cam(MycroftSkill):
         """Delete selfie .
         """
         self.log.info("FILE SHOULD BE DELETED HERE")
+        
+    def exit_cam(self):
+        """Exit the camera.
+        """
+        self.acknowledge()
+        self.emit_exit_cam()
          
     def emit_take_selfie(self):
         """Emits the TAKE-SELFIE command to MMM-Cam.
@@ -59,6 +66,11 @@ class Cam(MycroftSkill):
         """Emits the INIT-CAM command to MMM-Cam.
         """
         self.bus.emit(Message("RELAY:MMM-Cam:INIT-CAM", {}))
+        
+    def emit_exit_cam(self):
+        """Emits the EXIT-CAM command to MMM-Cam.
+        """
+        self.bus.emit(Message("RELAY:MMM-Cam:EXIT-CAM", {}))
 
     @intent_handler('take.a.selfie')
     def selfie_intent(self):
