@@ -22,7 +22,7 @@ class Cam(MycroftSkill):
         selfie = message.data['selfie']
         self.log.info('Selfie taken notification received.')
         while True:
-            options = self.translate_namedvalue('options')
+            options = self.translate_namedvalues('options')
             selection = self.ask_selection(options.items(), 'what.to.do')
             if selection == options['another']:
                 return self.emit._take_selfie()
