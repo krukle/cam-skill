@@ -18,8 +18,6 @@ class Cam(MycroftSkill):
         Args:
             message (Message): Message from MagicMirror containing 'data' dict with path to selfie with key 'selfie'. 
         """
-        print(message.data['selfie'])
-        assert message.data['selfie'], "No path to selfie found."
         selfie = message.data['selfie']
         self.log.info('Selfie taken notification received.')
         while True:
