@@ -8,7 +8,7 @@ class Cam(MycroftSkill):
         MycroftSkill.__init__(self)
 
     def initialize(self):
-        """Initialize event lsiteners.
+        """Initialize event listeners.
         """
         self.add_event('cam-skill:selfie_taken', self.selfie_taken_handler())
 
