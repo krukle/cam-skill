@@ -75,7 +75,7 @@ class Cam(MycroftSkill):
         """
         self.bus.emit(Message("RELAY:MMM-Cam:EXIT-CAM", {}))
 
-    @intent_handler('take.a.selfie')
+    @intent_handler('take.a.selfie.intent')
     def selfie_intent(self):
         """Listen for user intent to init cam and init cam.
         """
