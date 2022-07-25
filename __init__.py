@@ -10,7 +10,7 @@ class Cam(MycroftSkill):
     def initialize(self):
         """Initialize event listeners.
         """
-        self.add_event('cam-skill:selfie_taken', self.selfie_taken_handler)
+        self.add_event('selfieshot-skill:selfie_taken', self.selfie_taken_handler)
 
     def selfie_taken_handler(self, message:Message):
         """This method is called when the user takes a selfie.
@@ -70,8 +70,10 @@ class Cam(MycroftSkill):
     def emit_init_cam(self):
         """Emits the INIT-CAM command to MMM-Cam.
         """
-        self.bus.emit(Message("RELAY:MMM-Cam:INIT-CAM", {}))
-        
+        self.log.info((1))
+        # self.bus.emit(Message("RELAY:MMM-Cam:INIT-CAM", {}))
+        self.bus.emit(Message("RELAY:MMM-Cam:TAKE-SELFIE", {}))
+
     def emit_exit_cam(self):
         """Emits the EXIT-CAM command to MMM-Cam.
         """
@@ -81,6 +83,7 @@ class Cam(MycroftSkill):
     def selfie_intent(self):
         """Listen for user intent to init cam and init cam.
         """
+        self.log.info((0))
         return self.emit_init_cam()
 
 def create_skill() -> Cam:
