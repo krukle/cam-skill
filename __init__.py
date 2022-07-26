@@ -1,5 +1,7 @@
+import os
 from mycroft.messagebus     import Message
 from mycroft                import MycroftSkill, intent_handler
+from threading              import Timer
 
 class Cam(MycroftSkill):
     def __init__(self):
@@ -10,70 +12,88 @@ class Cam(MycroftSkill):
     def initialize(self):
         """Initialize event listeners.
         """
-        self.add_event('selfieshot-skill:selfie_taken', self.selfie_taken_handler)
+        self.add_event('cam-skill:selfie_taken', self.selfie_taken_handler)
+        self.selfie = None
+        self.timer = Timer(120, self.disable_timed_intents)
+        self.disable_timed_intents()
+
+    def disable_timed_intents(self):
+        self.disable_intent('delete.selfie.intent')
+        self.disable_intent('another.selfie.intent')
+        self.disable_intent('send.selfie.intent')
+        self.timer.cancel()
+
+    def enable_timed_intents(self, time:int):
+        self.enable_intent('delete.selfie.intent')
+        self.enable_intent('another.selfie.intent')
+        self.enable_intent('send.selfie.intent')      
+        self.timer.cancel()
+        self.timer = Timer(time, self.disable_timed_intents)
+        self.timer.start()
 
     def selfie_taken_handler(self, message:Message):
         """This method is called when the user takes a selfie.
 
         Args:
-            message (Message): Message from MagicMirror containing 'data' dict with path to selfie with key 'selfie'. 
+            message (Message): 
+                Message from MagicMirror containing 'data' dict 
+                
+                with path to selfie with key 'selfie' and 
+                
+                duration in which resulting selfie should be shown before 
+                
+                exiting with key 'resultDuration'. 
         """
         assert message.data['selfie'], "No path to selfie found."
-        selfie = message.data['selfie']
-        self.log.info('Selfie taken notification received.')
-        while True:
-            options = self.translate_namedvalues('options')
-            selection = self.ask_selection(list(options.values()), 'what.to.do')
-            if selection == options['another']:
-                return self.emit_take_selfie()
-            elif selection == options['send']:
-                self.send_selfie(selfie)
-                return self.another_selfie()
-            elif selection == options['delete']:
-                self.delete_selfie(selfie)
-                return self.another_selfie()
-            elif selection == options['exit'] or self.ask_yes_no('did.not.understand.do.you.want.to.exit') == 'yes':
-                return self.exit_cam()
+        self.selfie = message.data['selfie']
+        self.enable_timed_intents(message.data['resultDuration'] or 120)
+        self.speak_dialog('do.you.want.to.delete.another.or.save')
+        
+        # while True:
+        #     options = self.translate_namedvalues('options')
+        #     selection = self.ask_selection(list(options.values()), 'what.to.do')
+        #     if selection == options['another']:
+        #         return self.emit_take_selfie()
+        #     elif selection == options['send']:
+        #         self.send_selfie()
+        #         return self.another_selfie()
+        #     elif selection == options['delete']:
+        #         self.delete_selfie()
+        #         return self.another_selfie()
+        #     elif selection == options['exit'] or self.ask_yesno('did.not.understand.do.you.want.to.exit') == 'yes':
+        #         return self.emit_exit_cam()
             
-    def another_selfie(self):
-        """Ask the user if they want to take another selfie.
-        """
-        if self.ask_yes_no('another.selfie') == 'yes':
-            self.acknowledge()
-            return self.emit_take_selfie()
-        self.acknowledge()
+    # def another_selfie(self):
+    #     """Ask the user if they want to take another selfie.
+    #     """
+    #     if self.ask_yesno('another.selfie') == 'yes':
+    #         self.acknowledge()
+    #         return self.emit_take_selfie()
+    #     self.acknowledge()
 
-    def send_selfie(self, selfie:str):
+    def send_selfie(self):
         """Send a selfie to a friend .
-
-        Args:
-            selfie (str): Path to selfie.
         """
         self.log.info("FILE SHOULD BE SENT HERE")
     
-    def delete_selfie(self, selfie:str):
+    def delete_selfie(self):
         """Delete selfie .
         """
-        self.log.info("FILE SHOULD BE DELETED HERE")
-        
-    def exit_cam(self):
-        """Exit the camera.
-        """
-        self.acknowledge()
+        os.remove(self.selfie)
         self.emit_exit_cam()
-         
+        self.speak_dialog('selfie.deleted')
+        
     def emit_take_selfie(self):
         """Emits the TAKE-SELFIE command to MMM-Cam.
         """
-        self.bus.emit(Message("RELAY:MMM-Cam:TAKE-SELFIE", {}))
+        self.bus.emit(Message("RELAY:MMM-Cam:TAKE-SELFIE", {
+            "option": {
+                "shootCountdown": 1,
+                "playShutter": True,
+                "displayCountdown": True,
+            }
+        }))
  
-    def emit_init_cam(self):
-        """Emits the INIT-CAM command to MMM-Cam.
-        """
-        self.log.info((1))
-        # self.bus.emit(Message("RELAY:MMM-Cam:INIT-CAM", {}))
-        self.bus.emit(Message("RELAY:MMM-Cam:TAKE-SELFIE", {}))
-
     def emit_exit_cam(self):
         """Emits the EXIT-CAM command to MMM-Cam.
         """
@@ -83,8 +103,24 @@ class Cam(MycroftSkill):
     def selfie_intent(self):
         """Listen for user intent to init cam and init cam.
         """
-        self.log.info((0))
-        return self.emit_init_cam()
+        return self.emit_take_selfie()
+    
+    @intent_handler('delete.selfie.intent')
+    def delete_selfie_timed_intent(self):
+        self.disable_timed_intents()
+        if self.ask_yesno('are.you.sure.you.want.to.delete.selfie') == 'yes':
+            return self.delete_selfie()
+        self.speak_dialog('selfie.not.deleted')
+        
+    @intent_handler('another.selfie.intent')
+    def another_selfie_timed_intent(self):
+        self.disable_timed_intents()
+        return self.emit_take_selfie()
+    
+    @intent_handler('send.selfie.intent')
+    def send_selfie_timed_intent(self):
+        self.disable_timed_intents()
+        return self.send_selfie()
 
 def create_skill() -> Cam:
     return Cam()
