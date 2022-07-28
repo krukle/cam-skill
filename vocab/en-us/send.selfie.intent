@@ -1,1 +1,1 @@
-(send|email)(selfie|photo|photograph|image|picture)
+(send|email)(selfie|photo|photograph|image|picture)(to|){contact_name}
