@@ -182,11 +182,11 @@ class Cam(MycroftSkill):
         self.exit_cam()
         return self.emit_take_selfie()
 
-    @intent_handler('send.selfie.intent')
+    @intent_handler('send.selfie.to.intent')
     def send_selfie_timed_intent(self, msg):
         """
-        This function is called when the user says "send selfie". Sends a selfie to a contact.
-        @param contact - the contact to send the selfie to
+        This function is called when the user says "send selfie to ____". Sends a selfie to a contact.
+        @param contact_name - the contact to send the selfie to
         """
         contact_name = msg.data["contact_name"]
         contact = self.get_contact(contact_name if contact_name else self.get_response(
@@ -195,6 +195,20 @@ class Cam(MycroftSkill):
             self.exit_cam()
             return self.send_selfie(contact)
         return
+    
+    @intent_handler('send.selfie.intent')
+    def send_selfie_timed_intent(self, msg):
+        """
+        This function is called when the user says "send selfie". Sends a selfie to a contact.
+        """
+        contact_name = self.get_response('who.do.you.want.to.send.it.to')
+        if contact_name is None:
+            return
+        contact = self.get_contact(contact_name)
+        if contact is None:
+            return
+        self.exit_cam()
+        return self.send_selfie(contact)
 
     @intent_handler('exit.cam.intent')
     def exit_cam_timed_intent(self):
