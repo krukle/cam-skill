@@ -40,6 +40,7 @@ class Cam(MycroftSkill):
         self.disable_intent('delete.selfie.intent')
         self.disable_intent('another.selfie.intent')
         self.disable_intent('send.selfie.intent')
+        self.disable_intent('send.selfie.to.intent')
         self.disable_intent('exit.cam.intent')
         self.timer.cancel()
 
@@ -51,6 +52,7 @@ class Cam(MycroftSkill):
         self.enable_intent('delete.selfie.intent')
         self.enable_intent('another.selfie.intent')
         self.enable_intent('send.selfie.intent')
+        self.disable_intent('send.selfie.to.intent')
         self.enable_intent('exit.cam.intent')
         self.timer.cancel()
         self.timer = Timer(time, self.exit_cam)
@@ -183,7 +185,7 @@ class Cam(MycroftSkill):
         return self.emit_take_selfie()
 
     @intent_handler('send.selfie.to.intent')
-    def send_selfie_timed_intent(self, msg):
+    def send_selfie_to_timed_intent(self, msg):
         """
         This function is called when the user says "send selfie to ____". Sends a selfie to a contact.
         @param contact_name - the contact to send the selfie to
