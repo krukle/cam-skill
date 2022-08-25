@@ -1,5 +1,6 @@
 import os
 import base64
+import config
 from mycroft.messagebus import Message
 from mycroft import MycroftSkill, intent_handler
 from mycroft.skills.api import SkillApi
@@ -68,10 +69,7 @@ class Cam(MycroftSkill):
         with open(self.selfie, "rb") as file:
             base64_selfie = base64.b64encode(file.read()).decode()
 
-        api_key = "059fd1118e8d1ecab417cbf62c881ed6"
-        api_secret = "a011215abe3f3bcdaeccbdf944f1d185"
-
-        mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+        mailjet = Client(auth=(config.api_key, config.api_secret), version='v3.1')
         data = {
             'Messages': [{
                 "From": {
